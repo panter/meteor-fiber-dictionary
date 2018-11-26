@@ -1,28 +1,31 @@
-/* eslint global-require: 0*/
-/* eslint import/no-extraneous-dependencies: 0*/
-import { Meteor } from 'meteor/meteor'
+/* eslint global-require: 0 */
+/* eslint import/no-extraneous-dependencies: 0 */
+import { Meteor } from 'meteor/meteor';
 
-export default class FiberAwareVar {
-  constructor(key) {
-    this._key = key
+class FiberDictionary {
+  constructor(dictKey) {
+    this._dictKey = dictKey;
   }
 
-  getCurrentFiberContextValues() {
-    const Fibers = require('fibers')
+  getCurrentDictionary() {
+    const Fibers = require('fibers');
 
     if (!Fibers.current) {
-      throw new Error('no fiber')
+      throw new Error('no fiber');
     }
-    if (!Fibers.current['__fiberDict_' + key]) {
-      Fibers.current['__fiberDict_' + key] = new WeakMap()
+    if (!Fibers.current[`__fiberDict_${this._dictKey}`]) {
+      Fibers.current[`__fiberDict_${this._dictKey}`] = new Map();
     }
-    return Fibers.current['__fiberDict_' + key]
+    return Fibers.current[`__fiberDict_${this._dictKey}`];
   }
 
-  set(value) {
-    getCurrentFiberContextValues().set('locale', value)
+  set(dictKey, value) {
+    this.getCurrentDictionary().set(dictKey, value);
   }
-  get() {
-    return getCurrentFiberContextValues().get('locale')
+
+  get(key) {
+    return this.getCurrentDictionary().get(key);
   }
 }
+
+export { FiberDictionary };
